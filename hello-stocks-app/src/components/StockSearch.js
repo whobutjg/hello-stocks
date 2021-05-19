@@ -8,6 +8,16 @@ const StockSearch = ( ) => {
 
   const [tickers, setTickers] = useState([]);
   const [search, setSearch] = useState('');
+  const [currentTicker, setCurrentTicker] = useState(null);
+  const [newsStories, setNewsStories] = useState(null);
+
+  useEffect(() => {
+    if (currentTicker) {
+      axios.get(`https://api.polygon.io/v2/reference/news?limit=10&order=descending&sort=published_utc&ticker=${currentTicker}&published_utc.gte=2021-04-26&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
+      .then(res => console.log(res.data.results));
+    }
+    
+  }, [currentTicker]);
 
   useEffect(() => {
     if (search === '') {
@@ -25,6 +35,11 @@ const StockSearch = ( ) => {
     setSearch(event.target.value);
   }
 
+  const selectTicker = (event, value) => {
+    setCurrentTicker(value.ticker);
+    console.log(value.ticker);
+  }
+
   return (
     <div>
       <h2>Hello Stocks</h2>
@@ -34,6 +49,8 @@ const StockSearch = ( ) => {
       getOptionLabel={(option) => option.ticker}
       style={{ width: 300 }}
       onInputChange={handleChange}
+      onChange={selectTicker}
+      // getOptionLabel={(option) => console.log(option)}
       renderInput={(params) => <TextField {...params} label="Search..." variant="outlined" />}
     />
     </div>
