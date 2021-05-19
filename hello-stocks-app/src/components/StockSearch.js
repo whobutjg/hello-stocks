@@ -2,7 +2,7 @@ import React, {useState, useEffect,  useContext} from "react";
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import axios from 'axios';
-import { formatIStocksSnapshotTickerRaw } from "@polygon.io/client-js/lib/rest/stocks/snapshots";
+
 
 const StockSearch = ( ) => {
 
@@ -35,7 +35,7 @@ const StockSearch = ( ) => {
       getOptionLabel={(option) => option.ticker}
       style={{ width: 300 }}
       onInputChange={handleChange}
-      renderInput={(params) => <TextField {...params} label="Combo box" variant="outlined" />}
+      renderInput={(params) => <TextField {...params} label="Search..." variant="outlined" />}
     />
     </div>
   )
