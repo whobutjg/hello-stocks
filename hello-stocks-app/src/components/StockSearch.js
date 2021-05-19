@@ -22,13 +22,12 @@ const StockSearch = ( ) => {
   }, [search])
 
   const handleChange = (event) => {
-    console.log(event.target.value);
     setSearch(event.target.value);
   }
 
   return (
     <div>
-      <h2>Does this work? Test</h2>
+      <h2>Hello Stocks</h2>
       <Autocomplete
       id="combo-box-demo"
       options={tickers}
