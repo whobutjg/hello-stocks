@@ -13,6 +13,7 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import { Animation } from '@devexpress/dx-react-chart';
 import axios from 'axios';
+import moment from 'moment';
 
 
 const StockSearch = ( ) => {
@@ -93,7 +94,7 @@ const ValueLabel = (props) => {
   return (
     <ValueAxis.Label
       {...props}
-      text={`${text}%`}
+      text={`$${text}`}
     />
   );
 };
@@ -116,6 +117,8 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
   const [search, setSearch] = useState('');
   const [currentTicker, setCurrentTicker] = useState(null);
   const [newsStories, setNewsStories] = useState(null);
+  const [stockData, setStockData] = useState(null);
+  const [chartData, setChartData] = useState(null);
 
   useEffect(() => {
     if (currentTicker) {
@@ -132,7 +135,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
       // axios.get(`https://api.polygon.io/v2/aggs/ticker/${currentTicker}/range/1/day/2019-10-14/2020-10-14?unadjusted=true&sort=asc&limit=1000&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
       axios.get(`https://api.polygon.io/v2/aggs/ticker/${currentTicker}/range/1/day/${yearAgo}/${today}?unadjusted=true&sort=asc&limit=1000&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
-        .then(res => console.log(res.data));
+        .then(res => {setStockData(res.data.results); console.log(res.data.results)});
     }
     
   }, [currentTicker]);
@@ -148,6 +151,21 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
         }
       })
   }, [search])
+
+  useEffect(() => {
+    if (stockData) {
+
+      const tempChartData = [];
+
+      stockData.map(data => {
+        console.log(moment(data.t).format('MMMM'));
+        tempChartData.push({ month: moment(data.t).format('MMMM YYYY'), price: data.c })
+      })
+
+      console.log(tempChartData);
+      setChartData(tempChartData);
+    }
+  }, [stockData])
 
   const handleChange = (event) => {
     setSearch(event.target.value);
@@ -177,12 +195,10 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
 
 
-
-
-
-    <Paper>
+    {(chartData) ? 
+      <Paper>
         <Chart
-          data={confidence}
+          data={chartData}
           // className={classes.chart}
         >
           <ArgumentAxis tickFormat={format} />
@@ -192,28 +208,19 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
           />
 
           <LineSeries
-            name="TV news"
-            valueField="tvNews"
-            argumentField="year"
-          />
-          <LineSeries
-            name="Church"
-            valueField="church"
-            argumentField="year"
-          />
-          <LineSeries
-            name="Military"
-            valueField="military"
-            argumentField="year"
+            name={currentTicker}
+            valueField="price"
+            argumentField="month"
           />
           <Legend position="bottom" rootComponent={Root} itemComponent={Item} labelComponent={Label} />
           <Title
-            text={`Confidence in Institutions in American society ${'\n'}(Great deal)`}
+            text={`${currentTicker} Price History`}
             textComponent={TitleText}
           />
           <Animation />
         </Chart>
       </Paper>
+    : null}
 
 
 
