@@ -134,8 +134,8 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
       let yearAgo = (yyyy - 1) + '-' + mm + '-' + dd;
 
       // axios.get(`https://api.polygon.io/v2/aggs/ticker/${currentTicker}/range/1/day/2019-10-14/2020-10-14?unadjusted=true&sort=asc&limit=1000&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
-      axios.get(`https://api.polygon.io/v2/aggs/ticker/${currentTicker}/range/1/day/${yearAgo}/${today}?unadjusted=true&sort=asc&limit=1000&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
-        .then(res => {setStockData(res.data.results); console.log(res.data.results)});
+      axios.get(`https://api.polygon.io/v2/aggs/ticker/${currentTicker}/range/1/day/${yearAgo}/${today}?unadjusted=false&sort=asc&limit=1000&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
+        .then(res => {setStockData(res.data.results); console.log(res.data)});
     }
     
   }, [currentTicker]);
