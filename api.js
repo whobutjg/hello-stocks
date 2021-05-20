@@ -5,11 +5,16 @@ const apiKey = "&apiKey=HK4NQoeRq9x_93F6FNUq6BXvseZpT5w1";
 const apiFunctions = {
   
   getTickerInfo: async function getTickerInfo() {
-      let nextResponseUrl = "https://api.polygon.io/v3/reference/tickers?active=true&sort=ticker&order=asc&limit=1000" + apiKey;
+    setInterval(async () => {
+      let nextResponseUrl = "https://api.polygon.io/v3/reference/tickers?market=stocks&locale=us&active=true&sort=ticker&order=asc&limit=1000" + apiKey;
       let resultsArr = [];
-        setInterval(async () => {
+          while (nextResponseUrl) {
           try {
             const response = await axios.get(nextResponseUrl);
+            console.log('This is next_url --->', response.data.next_url);
+            if (!response.data.next_url) {
+              break;
+            }
             nextResponseUrl = response.data.next_url + apiKey;
             resultsArr = resultsArr.concat(response.data.results);   
             // console.log(resultsArr);
@@ -18,7 +23,8 @@ const apiFunctions = {
           }
           console.log(nextResponseUrl);
           console.log(resultsArr.length);
-        }, 5000) 
+          }
+        }, 86400000) 
       }
   
   // getNewsArticles: async function getNews() {
