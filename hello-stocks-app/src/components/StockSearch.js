@@ -14,6 +14,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { Animation } from '@devexpress/dx-react-chart';
 import axios from 'axios';
 import moment from 'moment';
+import SliderComponent from "./SliderComponent";
 
 
 const StockSearch = ( ) => {
@@ -219,6 +220,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
           />
           <Animation />
         </Chart>
+        <SliderComponent />
       </Paper>
     : null}
 
