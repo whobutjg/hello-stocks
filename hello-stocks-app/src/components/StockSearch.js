@@ -9,7 +9,9 @@ import {
   LineSeries,
   Title,
   Legend,
+  Tooltip,
 } from '@devexpress/dx-react-chart-material-ui';
+import { EventTracker } from '@devexpress/dx-react-chart';
 import { withStyles } from '@material-ui/core/styles';
 import { Animation } from '@devexpress/dx-react-chart';
 import axios from 'axios';
@@ -17,36 +19,6 @@ import moment from 'moment';
 
 
 const StockSearch = ( ) => {
-
-  const confidence = [
-  {
-    year: 1993, tvNews: 19, church: 29, military: 32,
-  }, {
-    year: 1995, tvNews: 13, church: 32, military: 33,
-  }, {
-    year: 1997, tvNews: 14, church: 35, military: 30,
-  }, {
-    year: 1999, tvNews: 13, church: 32, military: 34,
-  }, {
-    year: 2001, tvNews: 15, church: 28, military: 32,
-  }, {
-    year: 2003, tvNews: 16, church: 27, military: 48,
-  }, {
-    year: 2006, tvNews: 12, church: 28, military: 41,
-  }, {
-    year: 2008, tvNews: 11, church: 26, military: 45,
-  }, {
-    year: 2010, tvNews: 10, church: 25, military: 44,
-  }, {
-    year: 2012, tvNews: 11, church: 25, military: 43,
-  }, {
-    year: 2014, tvNews: 10, church: 25, military: 39,
-  }, {
-    year: 2016, tvNews: 8, church: 20, military: 41,
-  }, {
-    year: 2018, tvNews: 10, church: 20, military: 43,
-  },
-];
 
 const format = () => tick => tick;
 const legendStyles = () => ({
@@ -119,6 +91,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
   const [newsStories, setNewsStories] = useState(null);
   const [stockData, setStockData] = useState(null);
   const [chartData, setChartData] = useState(null);
+  const [currentChartPoint, setCurrentChartPoint] = useState(null);
 
   useEffect(() => {
     if (currentTicker) {
@@ -134,7 +107,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
       let yearAgo = (yyyy - 1) + '-' + mm + '-' + dd;
 
       // axios.get(`https://api.polygon.io/v2/aggs/ticker/${currentTicker}/range/1/day/2019-10-14/2020-10-14?unadjusted=true&sort=asc&limit=1000&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
-      axios.get(`https://api.polygon.io/v2/aggs/ticker/${currentTicker}/range/1/day/${yearAgo}/${today}?unadjusted=false&sort=asc&limit=1000&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
+      axios.get(`https://api.polygon.io/v2/aggs/ticker/${currentTicker}/range/1/day/${yearAgo}/${today}?unadjusted=false&sort=asc&limit=252&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
         .then(res => {setStockData(res.data.results); console.log(res.data)});
     }
     
@@ -159,7 +132,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
       stockData.map(data => {
         console.log(moment(data.t).format('MMMM'));
-        tempChartData.push({ month: moment(data.t).format('MMMM YYYY'), price: data.c })
+        tempChartData.push({ month: moment(data.t).format('MMMM DDDD YYYY'), price: data.c })
       })
 
       console.log(tempChartData);
@@ -193,7 +166,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
       renderInput={(params) => <TextField {...params} label="Search..." variant="outlined" />}
     />
 
-
+    {/* Try using a material ui slider component which executes a function that increments epoch timestamp */}
 
     {(chartData) ? 
       <Paper>
@@ -201,7 +174,11 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
           data={chartData}
           // className={classes.chart}
         >
-          <ArgumentAxis tickFormat={format} />
+          <ArgumentAxis 
+            tickFormat={format}
+            showLabels={false}
+            showTicks={false}
+          />
           <ValueAxis
             max={50}
             labelComponent={ValueLabel}
@@ -211,6 +188,19 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
             name={currentTicker}
             valueField="price"
             argumentField="month"
+          />
+          <EventTracker
+            onPointerMove={(TargetData) => {
+              // console.log(TargetData);
+
+              if (TargetData.targets.length) {
+                console.log(chartData[TargetData.targets[0].point]);
+                setCurrentChartPoint(chartData[TargetData.targets[0].point])
+              }
+            }}
+          />
+          <Tooltip 
+            contentComponent={() => <h5>{currentChartPoint.month} {currentChartPoint.price}</h5>}
           />
           <Legend position="bottom" rootComponent={Root} itemComponent={Item} labelComponent={Label} />
           <Title
