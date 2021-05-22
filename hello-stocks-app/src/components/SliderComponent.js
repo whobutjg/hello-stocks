@@ -1,8 +1,8 @@
-import React from 'react';
+import React, {useState, useEffect,  useContext} from "react";
 import { withStyles, makeStyles } from '@material-ui/core/styles';
 import Slider from '@material-ui/core/Slider';
 
-const SliderComponent = () => {
+const SliderComponent = (props) => {
   // const useStyles = makeStyles((theme) => ({
   //   root: {
   //     width: 300 + theme.spacing(3) * 2,
@@ -11,6 +11,15 @@ const SliderComponent = () => {
   //     height: theme.spacing(3),
   //   },
   // }));
+
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentEpoch, setCurrentEpoch] = useState(Math.round(currentDate.getTime() / 1000));
+  const [yearAgoEpoch, setYearAgoEpoch] = useState(Math.round(currentDate.setFullYear(currentDate.getFullYear() - 1)));
+  const [sliderVal, setSliderVal] = useState([0, 252]);
+
+  useEffect(() => {
+    props.setStockIndexes(sliderVal);
+  }, [sliderVal])
 
   const AirbnbSlider = withStyles({
     root: {
@@ -64,10 +73,17 @@ const SliderComponent = () => {
 
   return (
     <div>
-        <AirbnbSlider
+      <AirbnbSlider
         ThumbComponent={AirbnbThumbComponent}
         getAriaLabel={(index) => (index === 0 ? 'Minimum price' : 'Maximum price')}
-        defaultValue={[20, 40]}
+        onChange={(event, value) => {
+          setSliderVal(value);
+        }}
+        // value={sliderVal}
+        value={sliderVal}
+        defaultValue={sliderVal}
+        max={252}
+        min={0}
       />
     </div>
   )

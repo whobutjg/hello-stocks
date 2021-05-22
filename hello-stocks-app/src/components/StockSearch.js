@@ -92,7 +92,42 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
   const [newsStories, setNewsStories] = useState(null);
   const [stockData, setStockData] = useState(null);
   const [chartData, setChartData] = useState(null);
+  const [currentChartData, setCurrentChartData] = useState(chartData);
   const [currentChartPoint, setCurrentChartPoint] = useState(null);
+
+  // const [currentDate, setCurrentDate] = useState(new Date());
+  // const [currentEpoch, setCurrentEpoch] = useState(Math.round(currentDate.getTime() / 1000));
+  // const [yearAgoEpoch, setYearAgoEpoch] = useState(Math.round(currentDate.setFullYear(currentDate.getFullYear() - 1)));
+  // const [sliderVal, setSliderVal] = useState([yearAgoEpoch, currentEpoch]);
+
+  const [stockIndexes, setStockIndexes] = useState([0, 252]);
+  const [monthsAxis, setMonthsAxis] = useState([]);
+
+  useEffect(() => {
+    console.log(stockIndexes);
+
+    if (chartData) {
+      setCurrentChartData(chartData.slice(...stockIndexes));
+
+      const tempMonths = [];
+      const hashMap = {};
+
+      currentChartData.map(data => {
+        if (!hashMap[data.monthYear]) {
+          hashMap[data.monthYear] = 1;
+        }
+      })
+
+      for (const key of Object.keys(hashMap)) {
+        tempMonths.push(key);
+      }
+
+      setMonthsAxis(tempMonths);
+      console.log(tempMonths);
+    }
+  }, [stockIndexes])
+
+
 
   useEffect(() => {
     if (currentTicker) {
@@ -133,11 +168,12 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
       stockData.map(data => {
         console.log(moment(data.t).format('MMMM'));
-        tempChartData.push({ month: moment(data.t).format('MMMM DDDD YYYY'), price: data.c })
+        tempChartData.push({ month: moment(data.t).format('MMMM Do YYYY'), price: data.c, monthYear: moment(data.t).format('MMMM YYYY') })
       })
 
       console.log(tempChartData);
       setChartData(tempChartData);
+      setCurrentChartData(tempChartData)
     }
   }, [stockData])
 
@@ -154,6 +190,32 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
     }
   }
 
+
+
+
+
+  // const labelHalfWidth = 50;
+  const labelHalfWidth = 150;
+  let lastLabelCoordinate;
+
+  const ArgumentLabel = props => {
+    const { x } = props;
+    // filter Labels
+    if (
+      lastLabelCoordinate &&
+      lastLabelCoordinate < x &&
+      x - lastLabelCoordinate <= labelHalfWidth
+    ) {
+      return null;
+    }
+    lastLabelCoordinate = x;
+    return <ArgumentAxis.Label {...props} />;
+  };
+
+
+
+
+
   return (
     <div>
       <h2>Hello Stocks</h2>
@@ -167,18 +229,19 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
       renderInput={(params) => <TextField {...params} label="Search..." variant="outlined" />}
     />
 
-    {/* Try using a material ui slider component which executes a function that increments epoch timestamp */}
+   
 
-    {(chartData) ? 
+    {(currentChartData) ? 
       <Paper>
         <Chart
-          data={chartData}
+          data={currentChartData}
           // className={classes.chart}
         >
           <ArgumentAxis 
             tickFormat={format}
-            showLabels={false}
+            // showLabels={false}
             showTicks={false}
+            labelComponent={ArgumentLabel}
           />
           <ValueAxis
             max={50}
@@ -195,22 +258,24 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
               // console.log(TargetData);
 
               if (TargetData.targets.length) {
-                console.log(chartData[TargetData.targets[0].point]);
-                setCurrentChartPoint(chartData[TargetData.targets[0].point])
+                console.log(currentChartData[TargetData.targets[0].point]);
+                setCurrentChartPoint(currentChartData[TargetData.targets[0].point])
               }
             }}
           />
           <Tooltip 
             contentComponent={() => <h5>{currentChartPoint.month} {currentChartPoint.price}</h5>}
           />
-          <Legend position="bottom" rootComponent={Root} itemComponent={Item} labelComponent={Label} />
+          {/* <Legend position="bottom" rootComponent={Root} itemComponent={Item} labelComponent={Label} /> */}
           <Title
             text={`${currentTicker} Price History`}
             textComponent={TitleText}
           />
           <Animation />
         </Chart>
-        <SliderComponent />
+        <SliderComponent
+          setStockIndexes={setStockIndexes}
+        />
       </Paper>
     : null}
 
