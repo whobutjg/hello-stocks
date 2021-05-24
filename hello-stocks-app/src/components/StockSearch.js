@@ -300,7 +300,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
 
       <div className="search-bar-container">
-        <h1 className="search-tsla-style">Search ‘TSLA’.....</h1>
+        <h1 className="search-tsla-style">Ex: Search ‘TSLA’...</h1>
         <Autocomplete
           id="combo-box-demo"
           options={tickers}
@@ -320,7 +320,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
         <div>
           <div className="stock-info-main-flex">
             <div className="stock-name-logo-flex">
-              <h1>{currentTickerDetails.symbol} ({currentTickerDetails.name})</h1>
+              <h1>{currentTickerDetails.symbol} - ({currentTickerDetails.name})</h1>
               <img className="stock-logo-style" src={currentTickerDetails.logo} alt={currentTickerDetails.name + ' Logo'} />
             </div>
             <div className="prices-flex">
@@ -411,7 +411,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
     {(newsStories) ? 
       <div>
         {newsStories.map(story => {
-          return <a href={story.amp_url}>
+          return <a href={story.amp_url} target="_blank" rel="noreferrer">
                     <div>
                       <h2>{story.title}</h2>
                       <h3>{story.author}</h3>
