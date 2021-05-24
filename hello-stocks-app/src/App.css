@@ -1,1 +1,126 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Farro:wght@300&family=IBM+Plex+Sans&display=swap');
+
+body {
+    padding: 0;
+    margin: 0;
+    /* background-color: #E5E5E5; */
+    text-align: center;
+}
+
+.nav-bar-container {
+    width: 100vw;
+    background-color: #E7F6EC;
+    display: flex;
+    justify-content: space-between;
+}
+
+.hello-leaf-flex {
+    display: flex;
+    flex-direction: row;
+}
+
+.hello-stocks-logo-flex {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 15px;
+}
+
+@font-face {
+    font-family: sfProRounded;
+    src: url(./fonts/sf-pro-rounded.ttf);
+  }
+
+.hello-stocks-style {
+    font-family: sfProRounded;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 40px;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 10px;
+    padding-left: 12px;
+    color: #474747;
+}
+
+.stock-research-style {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 18px;
+    color: #474747;
+}
+
+.nav-items-flex {
+    display: flex;
+    flex-direction: row;
+}
+
+.nav-item-style {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 30px;
+    color: #3D3D3D;
+    padding: 0 30px 0 30px;
+}
+
+.disclaimer-padding {
+    padding-right: 60px;
+}
+
+.search-bar-container {
+    margin: 0 auto;
+    max-width: 500px;
+    margin-top: 50px;
+}
+
+.search-tsla-style {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 54px;
+}
+
+.main-image-style {
+    margin-top: 50px;
+}
+
+.ponder-girl-style {
+    margin-top: 100px;
+}
+
+.stock-logo-style {
+    width: 50px;
+    height: 50px;
+    padding-left: 10px;
+}
+
+.stock-name-logo-flex {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.chart-company-info-flex {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: 0 auto;
+    max-width: 1500px;
+    justify-content: center;
+}
+
+.company-profile-container {
+    max-width: 300px;
+    min-width: 200px;
+    margin: 0 20px 0 20px;
+    text-align: left;
+}
+
+.chart-paper {
+    flex: 1;
+    margin: 0 20px 0 20px;
+    min-width: 300px;
+}

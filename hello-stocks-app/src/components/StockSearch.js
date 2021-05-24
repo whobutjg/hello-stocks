@@ -17,6 +17,13 @@ import { Animation } from '@devexpress/dx-react-chart';
 import axios from 'axios';
 import moment from 'moment';
 import SliderComponent from "./SliderComponent";
+import '../App.css';
+import tealeaf from '../images/tealeaf.svg';
+import greentea from '../images/green-tea-1.svg';
+import mainimage from '../images/stocks-home-image.svg';
+import mainImage2 from '../images/rectangle-1.svg';
+import mainImage3 from '../images/rectangle-2.png';
+import ponderGirl from '../images/ponder-girl.png'
 
 
 const StockSearch = ( ) => {
@@ -85,7 +92,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
 
 
-
+  const [stockIndexes, setStockIndexes] = useState([0, 250]);
   const [tickers, setTickers] = useState([]);
   const [search, setSearch] = useState('');
   const [currentTicker, setCurrentTicker] = useState(null);
@@ -94,13 +101,16 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
   const [chartData, setChartData] = useState(null);
   const [currentChartData, setCurrentChartData] = useState(chartData);
   const [currentChartPoint, setCurrentChartPoint] = useState(null);
+  const [currentTickerDetails, setCurrentTickerDetails] = useState(null);
+  const [currentTickerPrice, setCurrentTickerPrice] = useState(null);
+
+  const [searchImage, setSearchImage] = useState(true);
 
   // const [currentDate, setCurrentDate] = useState(new Date());
   // const [currentEpoch, setCurrentEpoch] = useState(Math.round(currentDate.getTime() / 1000));
   // const [yearAgoEpoch, setYearAgoEpoch] = useState(Math.round(currentDate.setFullYear(currentDate.getFullYear() - 1)));
   // const [sliderVal, setSliderVal] = useState([yearAgoEpoch, currentEpoch]);
 
-  const [stockIndexes, setStockIndexes] = useState([0, 252]);
   const [monthsAxis, setMonthsAxis] = useState([]);
 
   useEffect(() => {
@@ -108,6 +118,12 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
     if (chartData) {
       setCurrentChartData(chartData.slice(...stockIndexes));
+
+      console.log(chartData[stockIndexes[0]].newsDates);
+      console.log(chartData[stockIndexes[1]].newsDates);
+
+      axios.get(`https://api.polygon.io/v2/reference/news?limit=10&order=descending&sort=published_utc&ticker=${currentTicker}&published_utc.lte=${chartData[stockIndexes[1]].newsDates}&published_utc.gt=${chartData[stockIndexes[0]].newsDates}&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
+        .then(res => {setNewsStories(res.data.results); console.log(res.data.results)});
 
       const tempMonths = [];
       const hashMap = {};
@@ -131,8 +147,13 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
   useEffect(() => {
     if (currentTicker) {
-      axios.get(`https://api.polygon.io/v2/reference/news?limit=10&order=descending&sort=published_utc&ticker=${currentTicker}&published_utc.gte=2021-04-26&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
-      .then(res => setNewsStories(res.data.results));
+      // axios.get(`https://api.polygon.io/v2/reference/news?limit=10&order=descending&sort=published_utc&ticker=${currentTicker}&published_utc.gte=2021-04-26&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
+      // .then(res => setNewsStories(res.data.results));
+
+      if (chartData) {
+        axios.get(`https://api.polygon.io/v2/reference/news?limit=10&order=descending&sort=published_utc&ticker=${currentTicker}&published_utc.lte=${chartData[stockIndexes[1]].newsDates}&published_utc.gt=${chartData[stockIndexes[0]].newsDates}&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
+        .then(res => {setNewsStories(res.data.results); console.log(res.data.results)});
+      }
 
       let today = new Date();
       let dd = String(today.getDate()).padStart(2, '0');
@@ -145,9 +166,45 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
       // axios.get(`https://api.polygon.io/v2/aggs/ticker/${currentTicker}/range/1/day/2019-10-14/2020-10-14?unadjusted=true&sort=asc&limit=1000&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
       axios.get(`https://api.polygon.io/v2/aggs/ticker/${currentTicker}/range/1/day/${yearAgo}/${today}?unadjusted=false&sort=asc&limit=252&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
         .then(res => {setStockData(res.data.results); console.log(res.data)});
+
+      axios.get(`https://api.polygon.io/v1/meta/symbols/${currentTicker}/company?&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
+        .then(res => {
+          setCurrentTickerDetails(res.data);
+          console.log(res.data);
+        })
+
+      axios.get(`https://api.polygon.io/v1/open-close/${currentTicker}/${getDateForPrice()}?unadjusted=false&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
+        .then(res => {
+          setCurrentTickerPrice(res.data);
+          console.log(res.data);
+        })
     }
     
   }, [currentTicker]);
+
+  const getDateForPrice = () => {
+
+    let today = new Date();
+    let dd = String(today.getDate()).padStart(2, '0');
+    let mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    let yyyy = today.getFullYear();
+
+    today = yyyy + '-' + mm + '-' + dd;
+
+    if (moment().format('dddd') === 'Saturday') {
+      today = today.split('-');
+      today[2] = today[2] - 1;
+      return today.join('-');
+    }
+
+    if (moment().format('dddd') === 'Sunday') {
+      today = today.split('-');
+      today[2] = today[2] - 2;
+      return today.join('-');
+    }
+
+    return today;
+  }
 
   useEffect(() => {
     if (search === '') {
@@ -157,6 +214,9 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
       .then(res => {
         if (res.data.results) {
           setTickers(res.data.results);
+          setSearchImage(true);
+        } else {
+          setSearchImage(false);
         }
       })
   }, [search])
@@ -167,8 +227,8 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
       const tempChartData = [];
 
       stockData.map(data => {
-        console.log(moment(data.t).format('MMMM'));
-        tempChartData.push({ month: moment(data.t).format('MMMM Do YYYY'), price: data.c, monthYear: moment(data.t).format('MMMM YYYY') })
+        // console.log(moment(data.t).format('YYYY-MM-DD'));
+        tempChartData.push({ month: moment(data.t).format('MMMM Do YYYY'), price: data.c, monthYear: moment(data.t).format('MMMM YYYY'), newsDates: moment(data.t).format('YYYY-MM-DD') })
       })
 
       console.log(tempChartData);
@@ -181,6 +241,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
     setSearch(event.target.value);
     setNewsStories(null);
     setCurrentTicker(null);
+    setTickers([]);
   }
 
   const selectTicker = (event, value) => {
@@ -200,6 +261,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
   const ArgumentLabel = props => {
     const { x } = props;
+    const { text } = props;
     // filter Labels
     if (
       lastLabelCoordinate &&
@@ -209,74 +271,136 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
       return null;
     }
     lastLabelCoordinate = x;
-    return <ArgumentAxis.Label {...props} />;
+    console.log();
+    return <ArgumentAxis.Label 
+              {...props} 
+              // text={text.split(' ')[0]}
+              text={(text.split(' ')[0] === 'January') ? text.split(' ')[0] + ' ' + text.split(' ')[2] : text.split(' ')[0]}
+           />;
   };
-
-
 
 
 
   return (
     <div>
-      <h2>Hello Stocks</h2>
-      <Autocomplete
-      id="combo-box-demo"
-      options={tickers}
-      getOptionLabel={(option) => option.ticker}
-      style={{ width: 300 }}
-      onInputChange={handleChange}
-      onChange={selectTicker}
-      renderInput={(params) => <TextField {...params} label="Search..." variant="outlined" />}
-    />
+      <div className="nav-bar-container">
+        <div className="hello-stocks-logo-flex">
+          <div className="hello-leaf-flex">
+            <h2 className="hello-stocks-style">HelloStocks</h2>
+            <img src={greentea} alt="Tea Leaf"/>
+          </div>
+          <h3 className="stock-research-style">Stock Research Made Simple</h3>
+        </div>
+        <div className="nav-items-flex">
+          <h2 className="nav-item-style">About Us</h2>
+          <h2 className="nav-item-style">Contact</h2>
+          <h2 className="nav-item-style disclaimer-padding">Disclaimer</h2>
+        </div>
+      </div>
 
+
+      <div className="search-bar-container">
+        <h1 className="search-tsla-style">Search ‘TSLA’.....</h1>
+        <Autocomplete
+          id="combo-box-demo"
+          options={tickers}
+          getOptionLabel={(option) => option.ticker}
+          onInputChange={handleChange}
+          onChange={selectTicker}
+          fullWidth={true}
+          noOptionsText={(!search.length) ? 'Please Enter A Symbol' : 'Hmm 🤔 Looks like you’ve entered an invalid symbol or we haven’t added that symbol yet. Please try a new search 🙏'}
+          // style={{ height: 75 }}
+          renderInput={(params) => <TextField {...params} label="Search Symbol" variant="outlined" />}
+        />
+      </div>
+
+
+
+      {(currentTickerDetails) ? 
+        <div>
+          <div className="stock-info-main-flex">
+            <div className="stock-name-logo-flex">
+              <h1>{currentTickerDetails.symbol} ({currentTickerDetails.name})</h1>
+              <img className="stock-logo-style" src={currentTickerDetails.logo} alt={currentTickerDetails.name + ' Logo'} />
+            </div>
+            <div className="prices-flex">
+
+            </div>
+          </div>
+          
+        </div>
+      : null}
+
+
+    
    
 
-    {(currentChartData) ? 
-      <Paper>
-        <Chart
-          data={currentChartData}
-          // className={classes.chart}
-        >
-          <ArgumentAxis 
-            tickFormat={format}
-            // showLabels={false}
-            showTicks={false}
-            labelComponent={ArgumentLabel}
-          />
-          <ValueAxis
-            max={50}
-            labelComponent={ValueLabel}
-          />
+    {(currentChartData && currentTickerDetails) ?
+      <div className="chart-company-info-flex">
+        <Paper className="chart-paper">
+          <Chart
+            data={currentChartData}
+            // width={100}
+            // className={classes.chart}
+          >
+            <ArgumentAxis 
+              tickFormat={format}
+              // showLabels={false}
+              // showTicks={false}
+              labelComponent={ArgumentLabel}
+            />
+            <ValueAxis
+              max={50}
+              labelComponent={ValueLabel}
+            />
 
-          <LineSeries
-            name={currentTicker}
-            valueField="price"
-            argumentField="month"
-          />
-          <EventTracker
-            onPointerMove={(TargetData) => {
-              // console.log(TargetData);
+            <LineSeries
+              name={currentTicker}
+              valueField="price"
+              argumentField="month"
+            />
+            <EventTracker
+              onPointerMove={(TargetData) => {
+                // console.log(TargetData);
 
-              if (TargetData.targets.length) {
-                console.log(currentChartData[TargetData.targets[0].point]);
-                setCurrentChartPoint(currentChartData[TargetData.targets[0].point])
-              }
-            }}
+                if (TargetData.targets.length) {
+                  console.log(currentChartData[TargetData.targets[0].point]);
+                  setCurrentChartPoint(currentChartData[TargetData.targets[0].point])
+                }
+              }}
+            />
+            <Tooltip 
+              contentComponent={() => <h5>{currentChartPoint.month} {currentChartPoint.price}</h5>}
+            />
+            {/* <Legend position="bottom" rootComponent={Root} itemComponent={Item} labelComponent={Label} /> */}
+            <Title
+              // text={`${currentTicker} Price History`}
+              textComponent={TitleText}
+            />
+            <Animation />
+          </Chart>
+          <SliderComponent
+            setStockIndexes={setStockIndexes}
           />
-          <Tooltip 
-            contentComponent={() => <h5>{currentChartPoint.month} {currentChartPoint.price}</h5>}
-          />
-          {/* <Legend position="bottom" rootComponent={Root} itemComponent={Item} labelComponent={Label} /> */}
-          <Title
-            text={`${currentTicker} Price History`}
-            textComponent={TitleText}
-          />
-          <Animation />
-        </Chart>
-        <SliderComponent
-          setStockIndexes={setStockIndexes}
-        />
-      </Paper>
+        </Paper>
+        <div className="company-profile-container">
+          <h2>Company Profile</h2>
+          <h3>{currentTickerDetails.description}</h3>
+        </div>
+      </div>
+    : null}
+
+
+
+
+    {(!currentChartData) ? 
+      <div>
+        {(searchImage) ? 
+          <img className="main-image-style" src={mainImage3} />
+        :
+          <img src={ponderGirl} alt="Pondering Girl" className="ponder-girl-style"/>
+        }
+      </div>
     : null}
 
 
@@ -296,7 +420,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
                   </a>
         })}
       </div>
-    : <h1>Pick A Stock To See Stories!</h1>}
+    : null}
     </div>
   )
 }
