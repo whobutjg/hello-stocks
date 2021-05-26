@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
 import ReactPaginate from 'react-paginate';
 
-const NextPage = () => {
+const [pageCount, setPageCount] = useState(1);
+
+
+const NextPage = (props) => {
   return (
-    <div></div>
+    <div>
+      <ReactPaginate
+        pageCount={pageCount}
+        pageRange={20}
+        marginPagesDisplayed={10}
+      />
+    </div>
   )
 }
 
