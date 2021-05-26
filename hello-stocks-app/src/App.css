@@ -113,8 +113,7 @@ body {
 }
 
 .company-profile-container {
-    max-width: 300px;
-    min-width: 200px;
+    width: 300px;
     margin: 0 20px 0 20px;
     text-align: left;
 }
@@ -122,5 +121,58 @@ body {
 .chart-paper {
     flex: 1;
     margin: 0 20px 0 20px;
-    min-width: 300px;
+    min-width: 500px;
+}
+
+.stories-align-flex {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: 0 auto;
+    max-width: 1500px;
+    justify-content: center;
+}
+
+.news-empty-space {
+    width: 300px;
+    margin: 0 20px 0 20px;
+}
+
+.all-stories-container {
+    background-color: #212529;
+    flex: 1;
+    min-width: 500px;
+    margin: 0 20px 0 20px;
+}
+
+.pagination-container {
+    background-color: #ffff;
+    display: inline-block;
+    margin: 0 auto;
+    padding: 10px;
+    margin: 20px 0 20px 0;
+    border-radius: 5px;
+}
+
+.story-container {
+    color: #F8F9FA;
+}
+
+@media screen and (max-width: 900px) {
+    .nav-items-flex {
+        display: none;
+    }
+}
+
+a {
+    color: blue;
+    text-decoration: none; /* no underline */
+  }
+
+.company-name-style {
+    font-family: sfProRounded;
+}
+
+.align-ticker-details {
+    /* display: inline-block; */
 }

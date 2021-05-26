@@ -23,7 +23,8 @@ import greentea from '../images/green-tea-1.svg';
 import mainimage from '../images/stocks-home-image.svg';
 import mainImage2 from '../images/rectangle-1.svg';
 import mainImage3 from '../images/rectangle-2.png';
-import ponderGirl from '../images/ponder-girl.png'
+import ponderGirl from '../images/ponder-girl.png';
+import Pagination from '@material-ui/lab/Pagination';
 
 
 const StockSearch = ( ) => {
@@ -92,7 +93,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
 
 
-  const [stockIndexes, setStockIndexes] = useState([0, 250]);
+  const [stockIndexes, setStockIndexes] = useState(null);
   const [tickers, setTickers] = useState([]);
   const [search, setSearch] = useState('');
   const [currentTicker, setCurrentTicker] = useState(null);
@@ -103,8 +104,18 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
   const [currentChartPoint, setCurrentChartPoint] = useState(null);
   const [currentTickerDetails, setCurrentTickerDetails] = useState(null);
   const [currentTickerPrice, setCurrentTickerPrice] = useState(null);
+  const [totalNewsPages, setTotalNewsPages] = useState(null);
+  const [allNewsStories, setAllNewsStories] = useState(null);
+  const [currentNewsSlice, setCurrentNewsSlice] = useState(null);
+  const [currentNewsPage, setCurrentNewsPage] = useState([0, 10]);
 
   const [searchImage, setSearchImage] = useState(true);
+
+  useEffect(() => {
+    if (allNewsStories) {
+      setCurrentNewsSlice(allNewsStories.slice(0, 10));
+    }
+  }, [allNewsStories])
 
   // const [currentDate, setCurrentDate] = useState(new Date());
   // const [currentEpoch, setCurrentEpoch] = useState(Math.round(currentDate.getTime() / 1000));
@@ -117,6 +128,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
     console.log(stockIndexes);
 
     if (chartData) {
+      console.log(chartData.slice(...stockIndexes));
       setCurrentChartData(chartData.slice(...stockIndexes));
 
       console.log(chartData[stockIndexes[0]].newsDates);
@@ -124,6 +136,13 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
       axios.get(`https://api.polygon.io/v2/reference/news?limit=10&order=descending&sort=published_utc&ticker=${currentTicker}&published_utc.lte=${chartData[stockIndexes[1]].newsDates}&published_utc.gt=${chartData[stockIndexes[0]].newsDates}&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
         .then(res => {setNewsStories(res.data.results); console.log(res.data.results)});
+
+        axios.get(`https://finnhub.io/api/v1/company-news?symbol=${currentTicker}&from=${chartData[stockIndexes[0]].newsDates}&to=${chartData[stockIndexes[1]].newsDates}&token=c2mjfh2ad3idu4ai7v4g`)
+        .then(res => {
+          console.log(res.data);
+          setAllNewsStories(res.data);
+          setTotalNewsPages((res.data.length % 10 > 0) ? Math.floor((res.data.length / 10) + 1) : res.data.length / 10);      
+        });
 
       const tempMonths = [];
       const hashMap = {};
@@ -153,6 +172,13 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
       if (chartData) {
         axios.get(`https://api.polygon.io/v2/reference/news?limit=10&order=descending&sort=published_utc&ticker=${currentTicker}&published_utc.lte=${chartData[stockIndexes[1]].newsDates}&published_utc.gt=${chartData[stockIndexes[0]].newsDates}&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
         .then(res => {setNewsStories(res.data.results); console.log(res.data.results)});
+
+        axios.get(`https://finnhub.io/api/v1/company-news?symbol=${currentTicker}&from=${chartData[stockIndexes[0]].newsDates}&to=${chartData[stockIndexes[1]].newsDates}&token=c2mjfh2ad3idu4ai7v4g`)
+        .then(res => {
+          console.log(res.data);
+          setAllNewsStories(res.data);
+          setTotalNewsPages((res.data.length % 10 > 0) ? Math.floor((res.data.length / 10) + 1) : res.data.length / 10);      
+        });
       }
 
       let today = new Date();
@@ -166,6 +192,8 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
       // axios.get(`https://api.polygon.io/v2/aggs/ticker/${currentTicker}/range/1/day/2019-10-14/2020-10-14?unadjusted=true&sort=asc&limit=1000&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
       axios.get(`https://api.polygon.io/v2/aggs/ticker/${currentTicker}/range/1/day/${yearAgo}/${today}?unadjusted=false&sort=asc&limit=252&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
         .then(res => {setStockData(res.data.results); console.log(res.data)});
+
+      
 
       axios.get(`https://api.polygon.io/v1/meta/symbols/${currentTicker}/company?&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
         .then(res => {
@@ -233,7 +261,8 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
       console.log(tempChartData);
       setChartData(tempChartData);
-      setCurrentChartData(tempChartData)
+      setCurrentChartData(tempChartData); 
+      setStockIndexes([0, tempChartData.length - 1]);
     }
   }, [stockData])
 
@@ -316,11 +345,11 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
 
 
-      {(currentTickerDetails) ? 
+      {/* {(currentTickerDetails) ? 
         <div>
           <div className="stock-info-main-flex">
             <div className="stock-name-logo-flex">
-              <h1>{currentTickerDetails.symbol} ({currentTickerDetails.name})</h1>
+              <h1 className="company-name-style">{currentTickerDetails.symbol} ({currentTickerDetails.name})</h1>
               <img className="stock-logo-style" src={currentTickerDetails.logo} alt={currentTickerDetails.name + ' Logo'} />
             </div>
             <div className="prices-flex">
@@ -329,63 +358,73 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
           </div>
           
         </div>
-      : null}
+      : null} */}
 
 
     
    
 
     {(currentChartData && currentTickerDetails) ?
-      <div className="chart-company-info-flex">
-        <Paper className="chart-paper">
-          <Chart
-            data={currentChartData}
-            // width={100}
-            // className={classes.chart}
-          >
-            <ArgumentAxis 
-              tickFormat={format}
-              // showLabels={false}
-              // showTicks={false}
-              labelComponent={ArgumentLabel}
-            />
-            <ValueAxis
-              max={50}
-              labelComponent={ValueLabel}
-            />
+        <div className="align-ticker-details">
+          <div>
+            <div className="stock-info-main-flex">
+              <div className="stock-name-logo-flex">
+                <h1 className="company-name-style">{currentTickerDetails.symbol} ({currentTickerDetails.name})</h1>
+                <img className="stock-logo-style" src={currentTickerDetails.logo} alt={currentTickerDetails.name + ' Logo'} />
+              </div>
+              <div className="prices-flex">
 
-            <LineSeries
-              name={currentTicker}
-              valueField="price"
-              argumentField="month"
-            />
-            <EventTracker
-              onPointerMove={(TargetData) => {
-                // console.log(TargetData);
+              </div>
+            </div>  
+          </div>
+          <div className="chart-company-info-flex">
+          <Paper className="chart-paper">
+            <Chart
+              data={currentChartData}
+            >
+              <ArgumentAxis 
+                tickFormat={format}
+                // showLabels={false}
+                // showTicks={false}
+                labelComponent={ArgumentLabel}
+              />
+              <ValueAxis
+                max={50}
+                labelComponent={ValueLabel}
+              />
 
-                if (TargetData.targets.length) {
-                  console.log(currentChartData[TargetData.targets[0].point]);
-                  setCurrentChartPoint(currentChartData[TargetData.targets[0].point])
-                }
-              }}
+              <LineSeries
+                name={currentTicker}
+                valueField="price"
+                argumentField="month"
+              />
+              <EventTracker
+                onPointerMove={(TargetData) => {
+
+                  if (TargetData.targets.length) {
+                    console.log(currentChartData[TargetData.targets[0].point]);
+                    setCurrentChartPoint(currentChartData[TargetData.targets[0].point])
+                  }
+                }}
+              />
+              <Tooltip 
+                contentComponent={() => <h5>{currentChartPoint.month} {currentChartPoint.price}</h5>}
+              />
+              {/* <Legend position="bottom" rootComponent={Root} itemComponent={Item} labelComponent={Label} /> */}
+              <Title
+                // text={`${currentTicker} Price History`}
+                textComponent={TitleText}
+              />
+              <Animation />
+            </Chart>
+            <SliderComponent
+              setStockIndexes={setStockIndexes}
             />
-            <Tooltip 
-              contentComponent={() => <h5>{currentChartPoint.month} {currentChartPoint.price}</h5>}
-            />
-            {/* <Legend position="bottom" rootComponent={Root} itemComponent={Item} labelComponent={Label} /> */}
-            <Title
-              // text={`${currentTicker} Price History`}
-              textComponent={TitleText}
-            />
-            <Animation />
-          </Chart>
-          <SliderComponent
-            setStockIndexes={setStockIndexes}
-          />
-        </Paper>
-        <div className="company-profile-container">
-          <h2>Company Profile</h2>
-          <h3>{currentTickerDetails.description}</h3>
+          </Paper>
+          <div className="company-profile-container">
+            <h2>Company Profile</h2>
+            <h3>{currentTickerDetails.description}</h3>
+          </div>
         </div>
       </div>
     : null}
@@ -407,18 +446,40 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
 
 
+    {(currentNewsSlice) ? 
+      <div className="stories-align-flex">
+        <div className="all-stories-container">
+          {currentNewsSlice.map(story => {
+            return <a href={story.url}>
+                      <div className="story-container">
+                        <h2>{story.headline}</h2>
+                        <h3>{story.source}</h3>
+                        <p>{story.summary}</p>
+                      </div>
+                    </a>
+          })}
+          <div className="pagination-container">
+            <Pagination 
+              count={10} 
+              variant="outlined" 
+              shape="rounded" 
+              hidePrevButton 
+              hideNextButton 
+              color="primary"
+              size="large"
+              count={totalNewsPages}
+              onChange={(event, page) => {
+                let pageIndexes = currentNewsPage;
+                pageIndexes[0] = page * 10;
+                pageIndexes[1] = pageIndexes[0] + 10
+                setCurrentNewsSlice(allNewsStories.slice(...pageIndexes));
 
-    {(newsStories) ? 
-      <div>
-        {newsStories.map(story => {
-          return <a href={story.amp_url}>
-                    <div>
-                      <h2>{story.title}</h2>
-                      <h3>{story.author}</h3>
-                      <p>{story.description}</p>
-                    </div>
-                  </a>
-        })}
+              }}
+            />
+          </div>
+        </div>
+        <div className="news-empty-space">
+        </div>
       </div>
     : null}
     </div>

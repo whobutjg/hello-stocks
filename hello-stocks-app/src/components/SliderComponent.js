@@ -77,6 +77,7 @@ const SliderComponent = (props) => {
         ThumbComponent={AirbnbThumbComponent}
         getAriaLabel={(index) => (index === 0 ? 'Minimum price' : 'Maximum price')}
         onChange={(event, value) => {
+          console.log(value);
           setSliderVal(value);
         }}
         // value={sliderVal}
