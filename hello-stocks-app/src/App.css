@@ -122,6 +122,8 @@ body {
     flex: 1;
     margin: 0 20px 0 20px;
     min-width: 500px;
+    position: relative;
+    padding-bottom: 95px;
 }
 
 .stories-align-flex {
@@ -175,4 +177,76 @@ a {
 
 .align-ticker-details {
     /* display: inline-block; */
+}
+
+.prices-flex {
+    display: flex;
+    flex-direction: row;
+}
+
+.open-close-price {
+    padding: 0 10px 0 10px;
+}
+
+.basic-financials-price-flex {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.high-low-52-week-flex {
+    display: flex;
+    flex-direction: column;
+}
+
+.high-low-flex, .fiftytwo-week-flex {
+    display: flex;
+    flex-direction: row;
+}
+
+.timeframe-buttons-flex {
+    display: flex;
+    flex-direction: row;
+}
+
+.timeframe-button-style {
+    padding: 0 10px 0 10px;
+    cursor: pointer;
+}
+
+.active-timeframe-button {
+    background-color: black;
+    color: #F8F9FA;
+}
+
+.news-date-range-style {
+    background-color: #ffff;
+}
+
+.lines-flex {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    position: relative;
+
+    
+}
+
+.noLineStyle {
+    width: 1px;
+}
+
+.tallLineStyle {
+    width: 1px;
+    height: 450px;
+    background-color: black;
+    /* position: relative;
+    bottom: 500px; */
+}
+
+.slider-lines-container {
+    position: absolute;
+    top: 110px;
+    width: 100%;
 }

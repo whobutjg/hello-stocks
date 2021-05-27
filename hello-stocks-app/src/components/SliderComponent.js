@@ -1,6 +1,7 @@
 import React, {useState, useEffect,  useContext} from "react";
 import { withStyles, makeStyles } from '@material-ui/core/styles';
 import Slider from '@material-ui/core/Slider';
+import Button from '@material-ui/core/Button';
 
 const SliderComponent = (props) => {
   // const useStyles = makeStyles((theme) => ({
@@ -15,7 +16,7 @@ const SliderComponent = (props) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentEpoch, setCurrentEpoch] = useState(Math.round(currentDate.getTime() / 1000));
   const [yearAgoEpoch, setYearAgoEpoch] = useState(Math.round(currentDate.setFullYear(currentDate.getFullYear() - 1)));
-  const [sliderVal, setSliderVal] = useState([0, 250]);
+  const [sliderVal, setSliderVal] = useState([0, props.sliderLength]);
 
   useEffect(() => {
     props.setStockIndexes(sliderVal);
@@ -58,6 +59,58 @@ const SliderComponent = (props) => {
     },
   })(Slider);
 
+  const iOSBoxShadow = '0 3px 1px rgba(0,0,0,0.1),0 4px 8px rgba(0,0,0,0.13),0 0 0 1px rgba(0,0,0,0.02)';
+
+  const IOSSlider = withStyles({
+  root: {
+    color: '#3880ff',
+    height: 2,
+    padding: '15px 0',
+  },
+  thumb: {
+    height: 28,
+    width: 28,
+    backgroundColor: '#fff',
+    boxShadow: iOSBoxShadow,
+    marginTop: -14,
+    marginLeft: -14,
+    '&:focus, &:hover, &$active': {
+      boxShadow: '0 3px 1px rgba(0,0,0,0.1),0 4px 8px rgba(0,0,0,0.3),0 0 0 1px rgba(0,0,0,0.02)',
+      // Reset on touch devices, it doesn't add specificity
+      '@media (hover: none)': {
+        boxShadow: iOSBoxShadow,
+      },
+    },
+  },
+  active: {},
+  valueLabel: {
+    left: 'calc(-50% + 12px)',
+    top: -22,
+    '& *': {
+      background: 'transparent',
+      color: '#000',
+    },
+  },
+  track: {
+    height: 2,
+  },
+  rail: {
+    height: 2,
+    opacity: 0.5,
+    backgroundColor: '#bfbfbf',
+  },
+  mark: {
+    backgroundColor: '#bfbfbf',
+    height: 8,
+    width: 1,
+    marginTop: -3,
+  },
+  markActive: {
+    opacity: 1,
+    backgroundColor: 'currentColor',
+  },
+})(Slider);
+
   function AirbnbThumbComponent(props) {
     return (
       <span {...props}>
@@ -68,24 +121,23 @@ const SliderComponent = (props) => {
     );
   }
 
-  // export default function CustomizedSlider() {
-  //   const classes = useStyles();
-
   return (
     <div>
-      <AirbnbSlider
-        ThumbComponent={AirbnbThumbComponent}
-        getAriaLabel={(index) => (index === 0 ? 'Minimum price' : 'Maximum price')}
-        onChange={(event, value) => {
+      <IOSSlider 
+        aria-label="ios slider" 
+        defaultValue={sliderVal}
+        valueLabelDisplay="auto" 
+        max={props.sliderLength}
+        min={0}
+        valueLabelFormat={(value, index) => {
+          return props.chartData[value].month;
+        }}
+        onChangeCommitted={(event, value) => {
           console.log(value);
           setSliderVal(value);
         }}
-        // value={sliderVal}
-        value={sliderVal}
-        defaultValue={sliderVal}
-        max={252}
-        min={0}
       />
+      <Button variant="contained" onClick={() => setSliderVal([0, props.sliderLength])}>Refresh Sliders</Button>
     </div>
   )
 }
