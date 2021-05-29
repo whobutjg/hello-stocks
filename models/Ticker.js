@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const stockSchema = new.mongoose.Schema({
+const tickerSchema = new.mongoose.Schema({
   ticker: {
     type: String,
     required: true,
@@ -14,6 +14,6 @@ const stockSchema = new.mongoose.Schema({
   }
 });
 
-const Stocks = mongoose.model('Stocks', stockSchema);
+const Ticker = mongoose.model('Ticker', tickerSchema);
 
-module.exports = Stocks;
+module.exports = Ticker;

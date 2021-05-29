@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 app.listen(port, () => console.log('Connected to port ' + port));
 
-app.get('/', (req, res) => {
+app.use('/', (req, res) => {
 	res.send('<h1>Hello Stocks</h1>');
 });
 
