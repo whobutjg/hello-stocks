@@ -8,6 +8,14 @@ const index = (req, res) => {
   });
 }
 
+const show = (req, res) => {
+  db.Ticker.findOne({ _id: req.params.id }, (err, foundTicker) => {
+    if (err) return console.log(err);
+    return res.json(foundTicker);
+  });
+}
+
 module.exports = {
-  index
+  index,
+  show
 };

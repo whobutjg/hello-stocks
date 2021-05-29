@@ -18,3 +18,7 @@ mongoose
   mongoose.connection.on('error', (err) => {
     console.log('MongoDB connection error', err);
   });
+
+  module.exports = {
+    Ticker: require('./Ticker'),
+  };

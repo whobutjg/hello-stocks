@@ -1,18 +1,16 @@
 const mongoose = require('mongoose');
 
-const tickerSchema = new.mongoose.Schema({
+const tickerSchema = new.mongoose.Schema(
+  {
   ticker: {
     type: String,
     required: true,
   },
-  name: {
-    type: String,
-    required: true,
-  },
-  price: {
-    type: Number,
-  }
-});
+  name: String,
+  price: Number,
+},
+  { timestamps: true }
+);
 
 const Ticker = mongoose.model('Ticker', tickerSchema);
 
