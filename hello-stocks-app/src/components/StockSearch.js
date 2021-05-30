@@ -114,6 +114,8 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
   const [searchImage, setSearchImage] = useState(true);
   const [timeFrameButton, setTimeFrameButton] = useState('1Y');
+  const [cycleTickers, setCycleTickers] = useState(['TSLA', 'AAPL', 'NVDA', 'AMZN', 'MSFT']);
+  const [currentCycle, setCurrentCycle] = useState(cycleTickers[0]);
 
   useEffect(() => {
     if (allNewsStories) {
@@ -230,12 +232,8 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
   useEffect(() => {
     if (currentTicker) {
-      // axios.get(`https://api.polygon.io/v2/reference/news?limit=10&order=descending&sort=published_utc&ticker=${currentTicker}&published_utc.gte=2021-04-26&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
-      // .then(res => setNewsStories(res.data.results));
 
       if (chartData) {
-        axios.get(`https://api.polygon.io/v2/reference/news?limit=10&order=descending&sort=published_utc&ticker=${currentTicker}&published_utc.lte=${chartData[stockIndexes[1]].newsDates}&published_utc.gt=${chartData[stockIndexes[0]].newsDates}&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
-        .then(res => {setNewsStories(res.data.results); console.log(res.data.results)});
 
         axios.get(`https://finnhub.io/api/v1/company-news?symbol=${currentTicker}&from=${chartData[stockIndexes[0]].newsDates}&to=${chartData[stockIndexes[1]].newsDates}&token=c2mjfh2ad3idu4ai7v4g`)
         .then(res => {
@@ -253,7 +251,6 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
       today = yyyy + '-' + mm + '-' + dd;
       let yearAgo = (yyyy - 1) + '-' + mm + '-' + dd;
 
-      // axios.get(`https://api.polygon.io/v2/aggs/ticker/${currentTicker}/range/1/day/2019-10-14/2020-10-14?unadjusted=true&sort=asc&limit=1000&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
       axios.get(`https://api.polygon.io/v2/aggs/ticker/${currentTicker}/range/1/day/${returnTimeFrame()[1]}/${returnTimeFrame()[0]}?unadjusted=false&sort=asc&limit=550&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
         .then(res => {setStockData(res.data.results); console.log(res.data)});
 
@@ -362,6 +359,21 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
     setTimeFrameButton(time);
   }
 
+  // useEffect(() => {
+  //   setInterval(() => {
+
+  //     const temp = cycleTickers;
+  //     temp.push(temp.shift());
+  
+  //     setCycleTickers(temp);
+  //     setCurrentCycle(cycleTickers[0]);
+  //     console.log(currentCycle);
+  //   }, 3000);
+  // }, []);  
+
+  
+
+
   return (
     <div>
       <div className="nav-bar-container">
@@ -381,7 +393,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
 
       <div className="search-bar-container">
-        <h1 className="search-tsla-style">Ex: Search ‘TSLA’...</h1>
+        <h1 className="search-tsla-style">Ex: Search ‘{currentCycle}’...</h1>
         <Autocomplete
           id="combo-box-demo"
           options={tickers}
