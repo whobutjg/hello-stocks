@@ -25,6 +25,7 @@ import mainImage2 from '../images/rectangle-1.svg';
 import mainImage3 from '../images/rectangle-2.png';
 import ponderGirl from '../images/ponder-girl.png';
 import Pagination from '@material-ui/lab/Pagination';
+import TextLoop from "react-text-loop";
 
 
 
@@ -140,9 +141,6 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
       // console.log(chartData[stockIndexes[0]].newsDates);
       // console.log(chartData[stockIndexes[1]].newsDates);
-
-      axios.get(`https://api.polygon.io/v2/reference/news?limit=10&order=descending&sort=published_utc&ticker=${currentTicker}&published_utc.lte=${chartData[stockIndexes[1]].newsDates}&published_utc.gt=${chartData[stockIndexes[0]].newsDates}&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
-        .then(res => {setNewsStories(res.data.results); console.log(res.data.results)});
 
         axios.get(`https://finnhub.io/api/v1/company-news?symbol=${currentTicker}&from=${chartData[stockIndexes[0]].newsDates}&to=${chartData[stockIndexes[1]].newsDates}&token=c2mjfh2ad3idu4ai7v4g`)
         .then(res => {
@@ -359,18 +357,6 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
     setTimeFrameButton(time);
   }
 
-  // useEffect(() => {
-  //   setInterval(() => {
-
-  //     const temp = cycleTickers;
-  //     temp.push(temp.shift());
-  
-  //     setCycleTickers(temp);
-  //     setCurrentCycle(cycleTickers[0]);
-  //     console.log(currentCycle);
-  //   }, 3000);
-  // }, []);  
-
   
 
 
@@ -393,7 +379,10 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
 
       <div className="search-bar-container">
-        <h1 className="search-tsla-style">Ex: Search ‘{currentCycle}’...</h1>
+        <h1 className="search-tsla-style">Ex: Search ‘
+          <TextLoop children={cycleTickers} />
+        ’...
+        </h1>
         <Autocomplete
           id="combo-box-demo"
           options={tickers}
