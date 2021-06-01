@@ -2,18 +2,17 @@ import React, {useState, useEffect,  useContext} from "react";
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import Paper from '@material-ui/core/Paper';
-import {
-  Chart,
-  ArgumentAxis,
-  ValueAxis,
-  LineSeries,
-  Title,
-  Legend,
-  Tooltip,
-} from '@devexpress/dx-react-chart-material-ui';
+// import {
+//   Chart,
+//   ArgumentAxis,
+//   ValueAxis,
+//   LineSeries,
+//   Title,
+//   Legend,
+//   Tooltip,
+// } from '@devexpress/dx-react-chart-material-ui';
 import { EventTracker } from '@devexpress/dx-react-chart';
 import { withStyles } from '@material-ui/core/styles';
-import { Animation } from '@devexpress/dx-react-chart';
 import axios from 'axios';
 import moment from 'moment';
 import SliderComponent from "./SliderComponent";
@@ -27,6 +26,21 @@ import ponderGirl from '../images/ponder-girl.png';
 import Pagination from '@material-ui/lab/Pagination';
 import TextLoop from "react-text-loop";
 
+import Chart, {
+  ArgumentAxis,
+  ValueAxis,
+  Series,
+  Legend,
+  VisualRange,
+  Label,
+  Tooltip,
+  Title, 
+  CommonSeriesSettings,
+  CommonAnnotationSettings,
+  Image,
+  Annotation,
+} from 'devextreme-react/chart';
+import rocket from '../images/rocket.png';
 
 
 const StockSearch = ( ) => {
@@ -117,6 +131,8 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
   const [timeFrameButton, setTimeFrameButton] = useState('1Y');
   const [cycleTickers, setCycleTickers] = useState(['TSLA', 'AAPL', 'NVDA', 'AMZN', 'MSFT']);
   const [currentCycle, setCurrentCycle] = useState(cycleTickers[0]);
+  const [fiveSignificantDates, setFiveSignificantDates] = useState([]);
+  const [annotationsArray, setAnnotationaArray] = useState([]);
 
   useEffect(() => {
     if (allNewsStories) {
@@ -304,6 +320,69 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
       setChartData(tempChartData);
       setCurrentChartData(tempChartData); 
       setStockIndexes([0, tempChartData.length - 1]);
+
+
+      // Run the stock data algorithm here
+
+      const fiveSignificantDates = [];
+
+      const mainSegmentsLength = Math.floor(tempChartData.length / 5);
+
+      for (let i = 0; i < 5; i++) {
+
+        const mainSegment = tempChartData.slice(i * mainSegmentsLength, (i * mainSegmentsLength) + mainSegmentsLength);
+
+        const currentSegmentLargest = {
+          indexes: [],
+          value: 0,
+          middlePoint: {},
+          date: '',
+          description: 'Test',
+          image: rocket,
+          stories: [],
+        };
+
+        for (let j = 0; j < mainSegment.length; j++) {
+
+          if (mainSegment[j + 5]) {
+            if (Math.abs(mainSegment[j].price - mainSegment[j + 5].price) > currentSegmentLargest.value) {
+              
+              // currentSegmentLargest.indexes = [j, j + 5];
+              currentSegmentLargest.indexes = [tempChartData.indexOf(mainSegment[j]), tempChartData.indexOf(mainSegment[j + 5])];
+              currentSegmentLargest.value = Math.abs(mainSegment[j].price - mainSegment[j + 5].price);
+              currentSegmentLargest.middlePoint = tempChartData[tempChartData.indexOf(mainSegment[j + 3])];
+              currentSegmentLargest.date = tempChartData[tempChartData.indexOf(mainSegment[j + 3])].newsDates;
+            }
+          } else {
+            if (Math.abs(mainSegment[j] - mainSegment[mainSegment.length - 1]) > currentSegmentLargest.value) {
+              // currentSegmentLargest.indexes = [j, mainSegment.length - 1];
+              currentSegmentLargest.indexes = [tempChartData.indexOf(mainSegment[j]), tempChartData.indexOf(mainSegment[mainSegment.length - 1])];
+              currentSegmentLargest.value = Math.abs(mainSegment[j].price - mainSegment[mainSegment.length - 1].price);
+              currentSegmentLargest.middlePoint = tempChartData[tempChartData.indexOf(mainSegment[j])];
+              currentSegmentLargest.date = tempChartData[tempChartData.indexOf(mainSegment[j])].newsDates;
+            }
+          }
+        }
+
+        if (allNewsStories) {
+          const stories = [];
+          let k = 0;
+          while (stories.length < 3) {
+            if (allNewsStories[k].headline.includes('Apple') || allNewsStories[k].headline.includes('Apples') || allNewsStories[k].headline.includes('AAPL')) {
+              stories.push(allNewsStories[k]);
+            }
+          }
+          currentSegmentLargest.stories = stories;
+        }
+
+
+        fiveSignificantDates.push(currentSegmentLargest);
+
+      }
+
+      console.log(fiveSignificantDates);
+      setFiveSignificantDates(fiveSignificantDates);
+
     }
   }, [stockData])
 
@@ -358,6 +437,34 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
   }
 
   
+  const customizeLabel = (arg) => {
+    // console.log(arg);
+    return {
+      visible: true,
+      backgroundColor: '#ff7c7c',
+      customizeText: function(e) {
+        // return `Test&#176F`;
+        return (<svg overflow="visible">
+                  <image y="0" width="40" height="40" href={rocket}>
+                  </image>
+                </svg>);
+      }
+    }
+  }
+
+
+  const customizeText =(arg) => {
+    // return 'Sleiffseff';
+    return <img src={rocket} />
+  }
+
+  const customizeTooltip = (annotation) => {
+    return {
+      html: `<div class='tooltip'>${annotation.description}</div>`,
+      interactive: true,
+      zIndex: -5,
+    };
+  }
 
 
   return (
@@ -395,24 +502,6 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
           renderInput={(params) => <TextField {...params} label="Search Symbol" variant="outlined" />}
         />
       </div>
-
-
-
-      {/* {(currentTickerDetails) ? 
-        <div>
-          <div className="stock-info-main-flex">
-            <div className="stock-name-logo-flex">
-              <h1 className="company-name-style">{currentTickerDetails.symbol} ({currentTickerDetails.name})</h1>
-              <h1>{currentTickerDetails.symbol} - ({currentTickerDetails.name})</h1>
-              <img className="stock-logo-style" src={currentTickerDetails.logo} alt={currentTickerDetails.name + ' Logo'} />
-            </div>
-            <div className="prices-flex">
-
-            </div>
-          </div>
-          
-        </div>
-      : null} */}
 
 
     
@@ -454,48 +543,101 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
               <h3 className={(timeFrameButton === '2Y') ? 'active-timeframe-button' : 'timeframe-button-style'} onClick={() => activeTimeframeButton('2Y')}>2Y</h3>
             </div>
 
-            <Chart
+            {/* <Chart
               data={currentChartData}
             >
               <ArgumentAxis 
                 tickFormat={format}
-                // showLabels={false}
-                // showTicks={false}
+                showTicks={false}
                 labelComponent={ArgumentLabel}
               />
               <ValueAxis
                 max={50}
                 labelComponent={ValueLabel}
               />
-              
               <LineSeries
                   name={currentTicker}
                   valueField="price"
                   argumentField="month"
                 />
-
-              
               <EventTracker
                   onPointerMove={(TargetData) => {
-
                     if (TargetData.targets.length) {
-                      // console.log(currentChartData[TargetData.targets[0].point]);
                       setCurrentChartPoint(currentChartData[TargetData.targets[0].point])
                     }
                   }}
               />
-
-
               <Tooltip 
                 contentComponent={() => <h5>{currentChartPoint.month} {currentChartPoint.price}</h5>}
               />
-              {/* <Legend position="bottom" rootComponent={Root} itemComponent={Item} labelComponent={Label} /> */}
               <Title
-                // text={`${currentTicker} Price History`}
                 textComponent={TitleText}
               />
-              {/* <Animation /> */}
+            </Chart> */}
+
+
+            {/* Non Material UI Styled Chart */}
+
+            <Chart
+              dataSource={currentChartData}
+              // customizeLabel={customizeLabel}
+            >
+              <CommonSeriesSettings argumentField="date" type="line" />
+              <Series 
+                // name={currentTicker}
+                name="stock"
+                valueField="price"
+                // argumentField="month"
+                argumentField="newsDates"
+                type="line"
+              />
+              <ArgumentAxis 
+                // tickFormat={format}
+                // showTicks={false}
+                // labelComponent={ArgumentLabel}
+                argumentType="datetime"
+              />
+              <ValueAxis
+                max={50}
+                labelComponent={ValueLabel}
+              >
+                {/* <Label customizeText={customizeText} /> */}
+              </ValueAxis>
+              {/* <EventTracker
+                  onPointerMove={(TargetData) => {
+                    if (TargetData.targets.length) {
+                      setCurrentChartPoint(currentChartData[TargetData.targets[0].point])
+                    }
+                  }}
+              /> */}
+              <CommonAnnotationSettings series="stock" type="image" customizeTooltip={customizeTooltip}>
+                <Image width={50.5} height={105.75} />
+              </CommonAnnotationSettings>
+              {
+                fiveSignificantDates.map((annotation, idx) => {
+                  return <Annotation
+                            key={idx}
+                            argument={annotation.date}
+                            type="image"
+                            description={annotation.description}
+                            color="rgba(255, 255, 255, 0)"
+                            border="rgba(255, 255, 255, 0)"
+                         >
+                            <Image url={annotation.image} onClick={() => console.log('Test')} />
+                         </Annotation>
+                })
+              }
+              <Tooltip 
+                contentComponent={() => <h5>{currentChartPoint.month} {currentChartPoint.price}</h5>}
+              />
+
+              <Legend visible={false} />
+              {/* <Title
+                textComponent={TitleText}
+              /> */}
             </Chart>
+
+
 
             <div className="slider-lines-container">
               <div className="lines-flex">
