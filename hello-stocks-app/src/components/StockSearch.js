@@ -134,52 +134,120 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
   const [fiveSignificantDates, setFiveSignificantDates] = useState([]);
   const [annotationsArray, setAnnotationaArray] = useState([]);
 
+
+// Refactor API calls and useEffects, need to use formatted chart data chartData for this useEffect
+  useEffect(() => {
+    if (currentTicker) {
+    console.log('TEST');
+
+    let today = new Date();
+    let dd = String(today.getDate()).padStart(2, '0');
+    let mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    let yyyy = today.getFullYear();
+
+    today = yyyy + '-' + mm + '-' + dd;
+    let yearAgo = (yyyy - 1) + '-' + mm + '-' + dd;
+
+    
+    
+
+    axios.get(`https://api.polygon.io/v2/aggs/ticker/${currentTicker}/range/1/day/${yearAgo}/${today}?unadjusted=false&sort=asc&limit=550&apiKey=vHjNP5FWBDFMkOyTytTHerS_1MYNXG5z`)
+      .then(res => {
+
+        const tempChartData = [];
+
+        res.data.results.map(data => {
+          // console.log(moment(data.t).format('YYYY-MM-DD'));
+          tempChartData.push({ month: moment(data.t).format('MMMM Do YYYY'), price: data.c, monthYear: moment(data.t).format('MMMM YYYY'), newsDates: moment(data.t).format('YYYY-MM-DD') })
+        })
+
+        const fiveSignificantDates = [];
+
+        const mainSegmentsLength = Math.floor(tempChartData.length / 5);
+
+        axios.get(`https://finnhub.io/api/v1/company-news?symbol=${currentTicker}&from=${yearAgo}&to=${today}&token=c2mjfh2ad3idu4ai7v4g`)
+            .then(news => {
+              for (let i = 0; i < 5; i++) {
+
+                const mainSegment = tempChartData.slice(i * mainSegmentsLength, (i * mainSegmentsLength) + mainSegmentsLength);
+      
+                const currentSegmentLargest = {
+                  indexes: [],
+                  value: 0,
+                  middlePoint: {},
+                  date: '',
+                  description: 'Test',
+                  image: rocket,
+                  stories: [],
+                };
+      
+                for (let j = 0; j < mainSegment.length; j++) {
+      
+                  if (mainSegment[j + 5]) {
+                    if (Math.abs(mainSegment[j].price - mainSegment[j + 5].price) > currentSegmentLargest.value) {
+                      // currentSegmentLargest.indexes = [j, j + 5];
+                      currentSegmentLargest.indexes = [tempChartData.indexOf(mainSegment[j]), tempChartData.indexOf(mainSegment[j + 5])];
+                      currentSegmentLargest.value = Math.abs(mainSegment[j].price - mainSegment[j + 5].price);
+                      currentSegmentLargest.middlePoint = tempChartData[tempChartData.indexOf(mainSegment[j + 3])];
+                      currentSegmentLargest.date = tempChartData[tempChartData.indexOf(mainSegment[j + 3])].newsDates;
+                    }
+                  } else {
+                    if (Math.abs(mainSegment[j] - mainSegment[mainSegment.length - 1]) > currentSegmentLargest.value) {
+                      // currentSegmentLargest.indexes = [j, mainSegment.length - 1];
+                      currentSegmentLargest.indexes = [tempChartData.indexOf(mainSegment[j]), tempChartData.indexOf(mainSegment[mainSegment.length - 1])];
+                      currentSegmentLargest.value = Math.abs(mainSegment[j].price - mainSegment[mainSegment.length - 1].price);
+                      currentSegmentLargest.middlePoint = tempChartData[tempChartData.indexOf(mainSegment[j])];
+                      currentSegmentLargest.date = tempChartData[tempChartData.indexOf(mainSegment[j])].newsDates;
+                    }
+                  }
+                }
+      
+                
+      
+                const stories = [];
+                let k = 0;
+                while (stories.length < 3) {
+                  console.log('Looping');
+                  if (news.data[k].headline.includes('Apple') || news.data[k].headline.includes('Apples') || news.data[k].headline.includes('AAPL')) {
+                    stories.push(news.data[k]);
+                  }
+                  k++;
+                }
+                currentSegmentLargest.stories = stories;
+      
+      
+                fiveSignificantDates.push(currentSegmentLargest);
+      
+              }
+            });
+ 
+        console.log(fiveSignificantDates);
+        setFiveSignificantDates(fiveSignificantDates);
+      });
+    }
+  }, [currentTicker])
+
+
+
+
   useEffect(() => {
     if (allNewsStories) {
       setCurrentNewsSlice(allNewsStories.slice(0, 10));
     }
   }, [allNewsStories])
 
-  // const [currentDate, setCurrentDate] = useState(new Date());
-  // const [currentEpoch, setCurrentEpoch] = useState(Math.round(currentDate.getTime() / 1000));
-  // const [yearAgoEpoch, setYearAgoEpoch] = useState(Math.round(currentDate.setFullYear(currentDate.getFullYear() - 1)));
-  // const [sliderVal, setSliderVal] = useState([yearAgoEpoch, currentEpoch]);
 
-  const [monthsAxis, setMonthsAxis] = useState([]);
+
+  
 
   useEffect(() => {
-    console.log(stockIndexes);
-
     if (chartData) {
-      // console.log(chartData);
-      // console.log(chartData.slice(...stockIndexes));
-      // setCurrentChartData(chartData.slice(...stockIndexes));
-
-      // console.log(chartData[stockIndexes[0]].newsDates);
-      // console.log(chartData[stockIndexes[1]].newsDates);
-
         axios.get(`https://finnhub.io/api/v1/company-news?symbol=${currentTicker}&from=${chartData[stockIndexes[0]].newsDates}&to=${chartData[stockIndexes[1]].newsDates}&token=c2mjfh2ad3idu4ai7v4g`)
         .then(res => {
           console.log(res.data);
           setAllNewsStories(res.data);
           setTotalNewsPages((res.data.length % 10 > 0) ? Math.floor((res.data.length / 10) + 1) : res.data.length / 10);      
         });
-
-      const tempMonths = [];
-      const hashMap = {};
-
-      currentChartData.map(data => {
-        if (!hashMap[data.monthYear]) {
-          hashMap[data.monthYear] = 1;
-        }
-      })
-
-      for (const key of Object.keys(hashMap)) {
-        tempMonths.push(key);
-      }
-
-      setMonthsAxis(tempMonths);
-      console.log(tempMonths);
     }
   }, [stockIndexes])
 
@@ -324,64 +392,64 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
       // Run the stock data algorithm here
 
-      const fiveSignificantDates = [];
+      // const fiveSignificantDates = [];
 
-      const mainSegmentsLength = Math.floor(tempChartData.length / 5);
+      // const mainSegmentsLength = Math.floor(tempChartData.length / 5);
 
-      for (let i = 0; i < 5; i++) {
+      // for (let i = 0; i < 5; i++) {
 
-        const mainSegment = tempChartData.slice(i * mainSegmentsLength, (i * mainSegmentsLength) + mainSegmentsLength);
+      //   const mainSegment = tempChartData.slice(i * mainSegmentsLength, (i * mainSegmentsLength) + mainSegmentsLength);
 
-        const currentSegmentLargest = {
-          indexes: [],
-          value: 0,
-          middlePoint: {},
-          date: '',
-          description: 'Test',
-          image: rocket,
-          stories: [],
-        };
+      //   const currentSegmentLargest = {
+      //     indexes: [],
+      //     value: 0,
+      //     middlePoint: {},
+      //     date: '',
+      //     description: 'Test',
+      //     image: rocket,
+      //     stories: [],
+      //   };
 
-        for (let j = 0; j < mainSegment.length; j++) {
+      //   for (let j = 0; j < mainSegment.length; j++) {
 
-          if (mainSegment[j + 5]) {
-            if (Math.abs(mainSegment[j].price - mainSegment[j + 5].price) > currentSegmentLargest.value) {
+      //     if (mainSegment[j + 5]) {
+      //       if (Math.abs(mainSegment[j].price - mainSegment[j + 5].price) > currentSegmentLargest.value) {
               
-              // currentSegmentLargest.indexes = [j, j + 5];
-              currentSegmentLargest.indexes = [tempChartData.indexOf(mainSegment[j]), tempChartData.indexOf(mainSegment[j + 5])];
-              currentSegmentLargest.value = Math.abs(mainSegment[j].price - mainSegment[j + 5].price);
-              currentSegmentLargest.middlePoint = tempChartData[tempChartData.indexOf(mainSegment[j + 3])];
-              currentSegmentLargest.date = tempChartData[tempChartData.indexOf(mainSegment[j + 3])].newsDates;
-            }
-          } else {
-            if (Math.abs(mainSegment[j] - mainSegment[mainSegment.length - 1]) > currentSegmentLargest.value) {
-              // currentSegmentLargest.indexes = [j, mainSegment.length - 1];
-              currentSegmentLargest.indexes = [tempChartData.indexOf(mainSegment[j]), tempChartData.indexOf(mainSegment[mainSegment.length - 1])];
-              currentSegmentLargest.value = Math.abs(mainSegment[j].price - mainSegment[mainSegment.length - 1].price);
-              currentSegmentLargest.middlePoint = tempChartData[tempChartData.indexOf(mainSegment[j])];
-              currentSegmentLargest.date = tempChartData[tempChartData.indexOf(mainSegment[j])].newsDates;
-            }
-          }
-        }
+      //         // currentSegmentLargest.indexes = [j, j + 5];
+      //         currentSegmentLargest.indexes = [tempChartData.indexOf(mainSegment[j]), tempChartData.indexOf(mainSegment[j + 5])];
+      //         currentSegmentLargest.value = Math.abs(mainSegment[j].price - mainSegment[j + 5].price);
+      //         currentSegmentLargest.middlePoint = tempChartData[tempChartData.indexOf(mainSegment[j + 3])];
+      //         currentSegmentLargest.date = tempChartData[tempChartData.indexOf(mainSegment[j + 3])].newsDates;
+      //       }
+      //     } else {
+      //       if (Math.abs(mainSegment[j] - mainSegment[mainSegment.length - 1]) > currentSegmentLargest.value) {
+      //         // currentSegmentLargest.indexes = [j, mainSegment.length - 1];
+      //         currentSegmentLargest.indexes = [tempChartData.indexOf(mainSegment[j]), tempChartData.indexOf(mainSegment[mainSegment.length - 1])];
+      //         currentSegmentLargest.value = Math.abs(mainSegment[j].price - mainSegment[mainSegment.length - 1].price);
+      //         currentSegmentLargest.middlePoint = tempChartData[tempChartData.indexOf(mainSegment[j])];
+      //         currentSegmentLargest.date = tempChartData[tempChartData.indexOf(mainSegment[j])].newsDates;
+      //       }
+      //     }
+      //   }
 
-        if (allNewsStories) {
-          const stories = [];
-          let k = 0;
-          while (stories.length < 3) {
-            if (allNewsStories[k].headline.includes('Apple') || allNewsStories[k].headline.includes('Apples') || allNewsStories[k].headline.includes('AAPL')) {
-              stories.push(allNewsStories[k]);
-            }
-          }
-          currentSegmentLargest.stories = stories;
-        }
+      //   if (allNewsStories) {
+      //     const stories = [];
+      //     let k = 0;
+      //     while (stories.length < 3) {
+      //       if (allNewsStories[k].headline.includes('Apple') || allNewsStories[k].headline.includes('Apples') || allNewsStories[k].headline.includes('AAPL')) {
+      //         stories.push(allNewsStories[k]);
+      //       }
+      //     }
+      //     currentSegmentLargest.stories = stories;
+      //   }
 
 
-        fiveSignificantDates.push(currentSegmentLargest);
+      //   fiveSignificantDates.push(currentSegmentLargest);
 
-      }
+      // }
 
-      console.log(fiveSignificantDates);
-      setFiveSignificantDates(fiveSignificantDates);
+      // console.log(fiveSignificantDates);
+      // setFiveSignificantDates(fiveSignificantDates);
 
     }
   }, [stockData])
@@ -460,9 +528,15 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
   const customizeTooltip = (annotation) => {
     return {
-      html: `<div class='tooltip'>${annotation.description}</div>`,
-      interactive: true,
-      zIndex: -5,
+      // html: `<div class='tooltip'>${annotation.description.map(story => {
+      //   console.log(story);
+      //   return <h5>{story.headline}</h5>
+      // })}</div>`,
+      html: `<div class='tooltip'>
+              <h3>${annotation.description[0].headline}</h3>
+              <h3>${annotation.description[1].headline}</h3>
+              <h3>${annotation.description[2].headline}</h3>
+            </div>`,
     };
   }
 
@@ -619,7 +693,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
                             key={idx}
                             argument={annotation.date}
                             type="image"
-                            description={annotation.description}
+                            description={annotation.stories}
                             color="rgba(255, 255, 255, 0)"
                             border="rgba(255, 255, 255, 0)"
                          >
