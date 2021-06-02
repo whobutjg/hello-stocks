@@ -165,8 +165,6 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
 
         const mainSegmentsLength = Math.floor(tempChartData.length / 5);
 
-        axios.get(`https://finnhub.io/api/v1/company-news?symbol=${currentTicker}&from=${yearAgo}&to=${today}&token=c2mjfh2ad3idu4ai7v4g`)
-            .then(news => {
               for (let i = 0; i < 5; i++) {
 
                 const mainSegment = tempChartData.slice(i * mainSegmentsLength, (i * mainSegmentsLength) + mainSegmentsLength);
@@ -202,24 +200,30 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
                   }
                 }
       
+                console.log(tempChartData[currentSegmentLargest.indexes[0]].newsDates)   
+                console.log(tempChartData[currentSegmentLargest.indexes[1]].newsDates)
+                
+                axios.get(`https://finnhub.io/api/v1/company-news?symbol=${currentTicker}&from=${tempChartData[currentSegmentLargest.indexes[0]].newsDates}&to=${tempChartData[currentSegmentLargest.indexes[1]].newsDates}&token=c2mjfh2ad3idu4ai7v4g`)
+                  .then(news => {
+                    const stories = [];
+                    let k = 0;
+                    while (stories.length < 3) {
+                      console.log('Looping');
+                      if (news.data[k].headline.includes('Apple') || news.data[k].headline.includes('Apples') || news.data[k].headline.includes('AAPL')) {
+                        stories.push(news.data[k]);
+                      }
+                      k++;
+                    }
+                    currentSegmentLargest.stories = stories;
+          
+          
+                    fiveSignificantDates.push(currentSegmentLargest);
+                  })
+      
                 
       
-                const stories = [];
-                let k = 0;
-                while (stories.length < 3) {
-                  console.log('Looping');
-                  if (news.data[k].headline.includes('Apple') || news.data[k].headline.includes('Apples') || news.data[k].headline.includes('AAPL')) {
-                    stories.push(news.data[k]);
-                  }
-                  k++;
-                }
-                currentSegmentLargest.stories = stories;
-      
-      
-                fiveSignificantDates.push(currentSegmentLargest);
-      
               }
-            });
+            
  
         console.log(fiveSignificantDates);
         setFiveSignificantDates(fiveSignificantDates);
