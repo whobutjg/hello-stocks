@@ -386,7 +386,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
         </div>
         <div className="nav-items-flex">
           <h2 className="nav-item-style">About Us</h2>
-          <h2 className="nav-item-style">Contact</h2>
+          <h2 className="nav-item-style"><a href ="https://www.nasdaq.com/glossary" target="_blank" rel="noreferrer">Glossary</a></h2>
           <h2 className="nav-item-style disclaimer-padding">Disclaimer</h2>
         </div>
       </div>
