@@ -2,6 +2,7 @@ import React, {useState, useEffect,  useContext} from "react";
 import { withStyles, makeStyles } from '@material-ui/core/styles';
 import Slider from '@material-ui/core/Slider';
 import Button from '@material-ui/core/Button';
+import Tooltip from '@material-ui/core/Tooltip';
 
 const SliderComponent = (props) => {
   // const useStyles = makeStyles((theme) => ({
@@ -143,6 +144,24 @@ const SliderComponent = (props) => {
     );
   }
 
+  const ValueLabelComponent = (props) => {
+  const { children, open, value } = props;
+
+  console.log(props);
+
+  return (
+    <Tooltip
+      title={value}
+      open={open}
+      placement="bottom"
+      arrow={true}
+      leaveTouchDelay={3000}
+    >
+      {children}
+    </Tooltip>
+  );
+}
+
   return (
     <div>
       <IOSSlider 
@@ -164,6 +183,7 @@ const SliderComponent = (props) => {
         //           <h1>{month}</h1>
         //          </div>
         // }}
+        ValueLabelComponent={ValueLabelComponent}
       />
       {/* <Button variant="contained" onClick={() => setSliderVal([0, props.sliderLength])}>Refresh Sliders</Button> */}
     </div>

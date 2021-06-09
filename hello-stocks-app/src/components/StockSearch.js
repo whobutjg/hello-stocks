@@ -235,7 +235,8 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
                   description: 'Test',
                   image: rocket,
                   stories: [],
-                  dateRange: []
+                  dateRange: [],
+                  priceDifference: [],
                 };
       
                 for (let j = 0; j < mainSegment.length; j++) {
@@ -245,6 +246,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
                       // currentSegmentLargest.indexes = [j, j + 5];
                       currentSegmentLargest.indexes = [tempChartData.indexOf(mainSegment[j]), tempChartData.indexOf(mainSegment[j + 5])];
                       currentSegmentLargest.value = Math.abs(mainSegment[j].price - mainSegment[j + 5].price);
+                      currentSegmentLargest.priceDifference = [mainSegment[j].price, mainSegment[j + 5].price];
                       currentSegmentLargest.middlePoint = tempChartData[tempChartData.indexOf(mainSegment[j + 3])];
                       currentSegmentLargest.date = tempChartData[tempChartData.indexOf(mainSegment[j + 3])].newsDates;
                       currentSegmentLargest.dateRange = [tempChartData[tempChartData.indexOf(mainSegment[j])].month, tempChartData[tempChartData.indexOf(mainSegment[j + 5])].month]
@@ -254,6 +256,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
                       // currentSegmentLargest.indexes = [j, mainSegment.length - 1];
                       currentSegmentLargest.indexes = [tempChartData.indexOf(mainSegment[j]), tempChartData.indexOf(mainSegment[mainSegment.length - 1])];
                       currentSegmentLargest.value = Math.abs(mainSegment[j].price - mainSegment[mainSegment.length - 1].price);
+                      currentSegmentLargest.priceDifference = [mainSegment[j].price, mainSegment[mainSegment.length - 1].price];
                       currentSegmentLargest.middlePoint = tempChartData[tempChartData.indexOf(mainSegment[j])];
                       currentSegmentLargest.date = tempChartData[tempChartData.indexOf(mainSegment[j])].newsDates;
                       currentSegmentLargest.dateRange = [tempChartData[tempChartData.indexOf(mainSegment[j])].month, tempChartData[tempChartData.indexOf(mainSegment[mainSegment.length - 1])].month]
@@ -617,6 +620,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
   }
 
   const customizeTooltip = (annotation) => {
+    console.log(annotation);
     return {
       // html: `<div class='tooltip'>${annotation.description.map(story => {
       //   console.log(story);
@@ -624,6 +628,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
       // })}</div>`,
       html: `<div class='tooltip'>
               <h2 class="tooltip-date-style">${annotation.dateRange[0]} - ${annotation.dateRange[1]}</h2>
+              <h2>${(annotation.priceDifference[0] > annotation.priceDifference[1]) ? `<span class="red-price">-${annotation.priceDifference[0] - annotation.priceDifference[1]}</span>` : `<span class="green-price">+${annotation.priceDifference[1] - annotation.priceDifference[0]}</span>`}</h2>
               <div class="rocket-headline-flex">
                 <div>
                   <img class="tooltip-rocket-style" src="${rocket}" />
@@ -928,12 +933,14 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
               {
                 (fiveSignificantDates) ?
                 (fiveSignificantDates.map((annotation, idx) => {
+                  console.log(annotation);
                   return <Annotation
                               key={idx}
                               argument={annotation.date}
                               type="image"
                               description={annotation.stories}
                               dateRange={annotation.dateRange}
+                              priceDifference={annotation.priceDifference}
                               color="rgba(255, 255, 255, 0)"
                               border="rgba(255, 255, 255, 0)"
                               width="30"
@@ -1015,7 +1022,7 @@ const TitleText = withStyles(titleStyles)(({ classes, ...props }) => (
               <h2 className="news-range-style">{chartData[stockIndexes[1]].month} - {chartData[stockIndexes[0]].month}</h2>
             </div>
             {currentNewsSlice.map(story => {
-              return <a href={story.url}>
+              return <a href={story.url} target="_blank">
                         <div className="story-container">
                           <h3 className="story-source-style">{story.source} <span className="story-date-padding">{moment.unix(story.datetime).format('MMMM Do YYYY')}</span></h3>
                           <h2 className="story-headline-style">{story.headline}</h2>
