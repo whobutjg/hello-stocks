@@ -18,9 +18,31 @@ const SliderComponent = (props) => {
   const [yearAgoEpoch, setYearAgoEpoch] = useState(Math.round(currentDate.setFullYear(currentDate.getFullYear() - 1)));
   const [sliderVal, setSliderVal] = useState([0, props.sliderLength]);
 
+
+  const useStyles = makeStyles(theme => ({
+    inputRoot: {
+      // color: "purple",
+      // "& .MuiOutlinedInput-notchedOutline": {
+      //   backgroundColor: "#FFFFFF"
+      // },
+      "& .MuiSlider-valueLabel": {
+        position: "relative",
+        top: 50,
+      },
+    }
+  }));
+
+
+  useEffect(() => {
+    setSliderVal([0, props.sliderLength]);
+  }, [props.resetSliders]);
+
+
   useEffect(() => {
     props.setStockIndexes(sliderVal);
   }, [sliderVal])
+
+  const classes = useStyles();
 
   const AirbnbSlider = withStyles({
     root: {
@@ -136,8 +158,14 @@ const SliderComponent = (props) => {
           console.log(value);
           setSliderVal(value);
         }}
+        // ValueLabelComponent={(props) => {
+        //   const { month } = props;
+        //   return <div>
+        //           <h1>{month}</h1>
+        //          </div>
+        // }}
       />
-      <Button variant="contained" onClick={() => setSliderVal([0, props.sliderLength])}>Refresh Sliders</Button>
+      {/* <Button variant="contained" onClick={() => setSliderVal([0, props.sliderLength])}>Refresh Sliders</Button> */}
     </div>
   )
 }
